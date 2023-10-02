@@ -3,70 +3,21 @@ package main
 import (
 	"bufio"
 	"flag"
-	"fmt"
-	"math"
 	"os"
 	"time"
+
+	"github.com/vbrenister/track-it/internal/prompt"
+	"github.com/vbrenister/track-it/internal/tracker"
 )
 
-type Break struct {
-	startTime time.Time
-	endTime   time.Time
-}
-
-type Tracker struct {
-	stopChan    chan interface{}
-	stopResult  chan time.Duration
-	pauseChan   chan bool
-	pauseResult chan []Break
-}
-
-func (t *Tracker) Start() {
-	startTime := time.Now()
-
-	var breaks []Break
-	var currentBreakIndex int
-
-	for {
-		select {
-		case <-t.stopChan:
-			t.pauseResult <- breaks
-			t.stopResult <- time.Since(startTime)
-			return
-		case isPause := <-t.pauseChan:
-			if isPause {
-				breaks = append(breaks, Break{startTime: time.Now()})
-				currentBreakIndex = len(breaks) - 1
-			} else {
-				breaks[currentBreakIndex].endTime = time.Now()
-			}
-		}
-	}
-}
-
-func formatDuration(duration time.Duration) string {
-	return fmt.Sprintf("%.0f:%.0f:%.0f",
-		math.Floor(duration.Hours()),
-		math.Floor(duration.Minutes()),
-		math.Floor(duration.Seconds()))
-}
-
-func RunCmd(workDir string, workHours int) {
-	tracker := Tracker{
-		stopChan:    make(chan interface{}),
-		stopResult:  make(chan time.Duration),
-		pauseChan:   make(chan bool),
-		pauseResult: make(chan []Break),
-	}
+func runTracker(workDir string, workDurationLimit time.Duration) {
+	t := tracker.NewTracker(workDurationLimit)
 
 	reader := bufio.NewReader(os.Stdin)
 
-	var isPause bool
+	t.Start()
 
-	go tracker.Start()
-
-	println("Press 's' to stop tracking")
-	println("Press 'p' to pause/unpause tracking")
+	prompt.PrintCommands()
 
 	for {
 		command, _, err := reader.ReadRune()
@@ -81,44 +32,40 @@ func RunCmd(workDir string, workHours int) {
 
 		switch command {
 		case 's':
-			tracker.stopChan <- struct{}{}
-
-			breaks := <-tracker.pauseResult
-			var totalBreaks time.Duration
-
-			for _, b := range breaks {
-				totalBreaks += b.endTime.Sub(b.startTime)
-			}
-			fmt.Printf("Your total break time: %s\n", formatDuration(totalBreaks))
-
-			workedHours := <-tracker.stopResult
-			workedHours -= totalBreaks
-
-			fmt.Printf("Your total worked hours today: %s\n", formatDuration(workedHours))
+			t.Stop()
+			prompt.PrintStatistics(t)
 			return
 		case 'p':
-			if isPause {
+			if t.IsStopped {
+				println("Tracker is stopped. You can't pause it")
+				return
+			}
+			if t.IsPaused {
 				println("Unpaused")
-				isPause = false
+				t.Unpause()
 			} else {
 				println("Paused")
-				isPause = true
+				t.Pause()
 			}
-			tracker.pauseChan <- isPause
 			continue
+		case 'q':
+			if t.IsStopped {
+				prompt.PrintStatistics(t)
+			}
+			return
 		default:
-			println("Invalid command. Available commands: 's', 'p'")
+			println("Invalid command. Available commands: ['s', 'p', 'q']")
 		}
 	}
 }
 
 func main() {
 	var workDir string
-	var workHours int
+	var workDurationLimit time.Duration
 
-	flag.IntVar(&workHours, "hours", 8, "work hours")
-	flag.StringVar(&workDir, "workDir", "./tracke_it_workdir", "work directory")
+	flag.DurationVar(&workDurationLimit, "workDuration", time.Hour*8, "The max duration of work")
+	flag.StringVar(&workDir, "reportDir", "./tracke_it_workdir", "Report directory")
 	flag.Parse()
 
-	RunCmd(workDir, workHours)
+	runTracker(workDir, workDurationLimit)
 }
