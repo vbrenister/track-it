@@ -70,7 +70,7 @@ func main() {
 	var isMonthlyReport bool
 
 	flag.DurationVar(&workDurationLimit, "workDuration", time.Hour*8, "The max duration of work")
-	flag.StringVar(&workDir, "reportDir", "./tracker_reports", "Report directory")
+	flag.StringVar(&workDir, "reportDir", "./reports", "Report directory")
 	flag.BoolVar(&isMonthlyReport, "generateReport", false, "Monthly report")
 	flag.Parse()
 
