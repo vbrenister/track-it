@@ -9,8 +9,8 @@ type Break struct {
 
 type Tracker struct {
 	workDurationLimit time.Duration
-	startTime         time.Time
-	stopTime          time.Time
+	StartTime         time.Time
+	StopTime          time.Time
 	IsStopped         bool
 	IsPaused          bool
 	breaks            []Break
@@ -33,20 +33,20 @@ func (t *Tracker) WorkedDuration() time.Duration {
 
 func (t *Tracker) TotalDuration() time.Duration {
 	if t.IsStopped {
-		return t.stopTime.Sub(t.startTime)
+		return t.StopTime.Sub(t.StartTime)
 	}
-	return time.Since(t.startTime)
+	return time.Since(t.StartTime)
 }
 
 func (t *Tracker) Start() {
-	t.startTime = time.Now()
+	t.StartTime = time.Now()
 
 	go func() {
 		for {
 			select {
 			case <-t.stopSignal:
 				t.IsStopped = true
-				t.stopTime = time.Now()
+				t.StopTime = time.Now()
 
 				return
 			case <-t.pauseSignal:
@@ -58,8 +58,8 @@ func (t *Tracker) Start() {
 			default:
 				if t.WorkedDuration() >= t.workDurationLimit {
 					t.IsStopped = true
-					t.stopTime = time.Now()
-					println("Work time exceeded. Stopping time tracking")
+					t.StopTime = time.Now()
+					println("Work time exceeded. Stopped time tracking")
 					return
 				}
 			}

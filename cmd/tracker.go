@@ -7,10 +7,11 @@ import (
 	"time"
 
 	"github.com/vbrenister/track-it/internal/prompt"
+	"github.com/vbrenister/track-it/internal/reporter"
 	"github.com/vbrenister/track-it/internal/tracker"
 )
 
-func runTracker(workDir string, workDurationLimit time.Duration) {
+func runTracker(r *reporter.Reporter, workDurationLimit time.Duration) {
 	t := tracker.NewTracker(workDurationLimit)
 
 	reader := bufio.NewReader(os.Stdin)
@@ -34,10 +35,13 @@ func runTracker(workDir string, workDurationLimit time.Duration) {
 		case 's':
 			t.Stop()
 			prompt.PrintStatistics(t)
+			r.WriteStatistics(t)
 			return
 		case 'p':
 			if t.IsStopped {
 				println("Tracker is stopped. You can't pause it")
+				prompt.PrintStatistics(t)
+				r.WriteStatistics(t)
 				return
 			}
 			if t.IsPaused {
@@ -51,6 +55,7 @@ func runTracker(workDir string, workDurationLimit time.Duration) {
 		case 'q':
 			if t.IsStopped {
 				prompt.PrintStatistics(t)
+				r.WriteStatistics(t)
 			}
 			return
 		default:
@@ -62,10 +67,19 @@ func runTracker(workDir string, workDurationLimit time.Duration) {
 func main() {
 	var workDir string
 	var workDurationLimit time.Duration
+	var isMonthlyReport bool
 
 	flag.DurationVar(&workDurationLimit, "workDuration", time.Hour*8, "The max duration of work")
-	flag.StringVar(&workDir, "reportDir", "./tracke_it_workdir", "Report directory")
+	flag.StringVar(&workDir, "reportDir", "./tracker_reports", "Report directory")
+	flag.BoolVar(&isMonthlyReport, "generateReport", false, "Monthly report")
 	flag.Parse()
 
-	runTracker(workDir, workDurationLimit)
+	r := reporter.NewReporter(workDir)
+
+	if isMonthlyReport {
+		r.MonthlyReport()
+		return
+	}
+
+	runTracker(r, workDurationLimit)
 }

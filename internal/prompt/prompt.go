@@ -16,6 +16,7 @@ func formatDuration(duration time.Duration) string {
 }
 
 func PrintCommands() {
+	println("Tracking started")
 	println("Press 's' to stop tracking")
 	println("Press 'p' to pause/unpause tracking")
 	println("Press 'q' to quit")
