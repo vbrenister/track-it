@@ -26,6 +26,6 @@ jobs:
         mv bin/cmd bin/tracker
 
     - name: Release
-      uses: softprops/action-gh-release@v1
+      uses: ncipollo/release-action@v1
       with:
-        files: bin/tracker
+        artifacts: "bin/tracker"
