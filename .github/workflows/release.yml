@@ -26,7 +26,7 @@ jobs:
 
         GOOS=windows GOARCH=amd64 go build -o bin/ -v ./...
         mv bin/cmd.exe bin/tracker-windows-amd64.exe
-        
+
         GOOS=linux GOARCH=amd64 go build -o bin/ -v ./...
         mv bin/cmd bin/tracker-linux-amd64
 
@@ -35,7 +35,7 @@ jobs:
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         automatic_release_tag: "latest"
-        prerelease: true
+        prerelease: false
         title: "Latest Release"
         files: bin/*
           
