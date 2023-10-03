@@ -26,6 +26,12 @@ jobs:
         mv bin/cmd bin/tracker
 
     - name: Release
-      uses: ncipollo/release-action@v1
+      uses: "marvinpinto/action-automatic-releases@latest"
       with:
-        artifacts: "bin/tracker"
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest"
+        prerelease: true
+        title: "Latest Release"
+        files: |
+          bin/tracker
+    
