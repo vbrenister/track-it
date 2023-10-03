@@ -40,6 +40,7 @@ func (t *Tracker) TotalDuration() time.Duration {
 
 func (t *Tracker) Start() {
 	t.StartTime = time.Now()
+	println("Tracker started at", t.StartTime.Format("15:04:05"))
 
 	go func() {
 		for {
