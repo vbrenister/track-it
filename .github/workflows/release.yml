@@ -23,13 +23,12 @@ jobs:
       run: |
         GOOS=darwin GOARCH=arm64 go build -o bin/ -v ./...
         mv bin/cmd bin/tracker-darwin-arm64
-        rm bin/cmd
+
         GOOS=windows GOARCH=amd64 go build -o bin/ -v ./...
         mv bin/cmd.exe bin/tracker-windows-amd64.exe
-        rm bin/cmd.exe
+        
         GOOS=linux GOARCH=amd64 go build -o bin/ -v ./...
-        mv bin/cmd.exe bin/tracker-linux-amd64.exe
-        rm bin/cmd
+        mv bin/cmd bin/tracker-linux-amd64
 
     - name: Release
       uses: "marvinpinto/action-automatic-releases@latest"
