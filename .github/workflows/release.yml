@@ -1,10 +1,9 @@
-name: Go
+name: Release
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    tags:
+        - "v*"
 
 permissions:
       contents: write
@@ -23,7 +22,14 @@ jobs:
     - name: Build
       run: |
         GOOS=darwin GOARCH=arm64 go build -o bin/ -v ./...
-        mv bin/cmd bin/tracker
+        mv bin/cmd bin/tracker-darwin-arm64
+        rm bin/cmd
+        GOOS=windows GOARCH=amd64 go build -o bin/ -v ./...
+        mv bin/cmd.exe bin/tracker-windows-amd64.exe
+        rm bin/cmd.exe
+        GOOS=linux GOARCH=amd64 go build -o bin/ -v ./...
+        mv bin/cmd.exe bin/tracker-linux-amd64.exe
+        rm bin/cmd
 
     - name: Release
       uses: "marvinpinto/action-automatic-releases@latest"
@@ -32,6 +38,6 @@ jobs:
         automatic_release_tag: "latest"
         prerelease: true
         title: "Latest Release"
-        files: |
-          bin/tracker
+        files: bin/*
+          
     
