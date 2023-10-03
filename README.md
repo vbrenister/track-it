@@ -22,6 +22,20 @@ Example:
 go run ./cmd/tracker.go -workDuration 8h -reportDir ./reports -generateReport
 ```
 
+#### Using Makefile
+
+Besides runnging plain `go run` command you can use Makefile to run tracker.
+
+Start tracker with default flags
+```
+make start-tracker
+```
+
+Generate monthly report
+```
+make report
+```
+
 ### Using binary
 You can download binary from [releases](www.google.com) based on your OS and architecture.
 
